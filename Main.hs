@@ -1,6 +1,6 @@
 --  File     : Main.hs
 --  Author   : Peter Schachte
---  Purpose  : Test program for guessing game project to be used in Grok
+--  Purpose  : Test program for guessing game project
 
 
 module Main where
@@ -16,7 +16,7 @@ main :: IO ()
 main = do
     case mapM toLocation $ words testCase of
         Just target@[_,_,_] ->
-            proj2test target
+            gametest target
         _ -> do
             putStrLn $ "toLocation Failed to convert one of " ++ testCase
                  ++ " to a Location"
