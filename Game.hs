@@ -6,8 +6,8 @@
 module Game (Location, toLocation, fromLocation, feedback,
               GameState, initialGuess, nextGuess) where
 
-
 import Data.Char (ord)
+import Data.List (permutations)
 
 type Location = (Char, Int)
 type GameState = [[Location]]
@@ -26,7 +26,7 @@ feedback target (g:gs) =  maximum results `sumFeedback` feedback target gs
     where results = map (`compareGuess` g) target
 
 -- compare a single guess
-compareGuess :: Location -> Location -> (a, b, c)
+compareGuess :: Location -> Location -> (Int, Int, Int)
 compareGuess target guess
     | target == guess = (1,0,0)
     | adjacent 1 target guess = (0,1,0)
@@ -53,3 +53,19 @@ combinations _ [] = []
 combinations k (x:xs) = combinations k xs ++ map (x:) (combinations (k-1) xs)
 
 nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
+nextGuess (loc, state) feedback = (newLoc, newState)
+    where 
+        newLoc = head state
+        newState = deleteTarget newLoc state
+
+
+equalTarget :: [Location] -> [Location] -> Bool
+equalTarget xs ys = xs `elem` permutations ys
+
+searchTarget :: [Location] -> GameState -> Bool
+searchTarget _ [] = False
+searchTarget xs (y:ys) = equalTarget xs y || searchTarget xs ys
+
+deleteTarget :: [Location] -> GameState -> GameState
+deleteTarget x = filter $ not . equalTarget x
+
