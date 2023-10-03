@@ -39,7 +39,6 @@ adjacent num (x1,y1) (x2,y2) = abs (ord x1 - ord x2) <= num && abs (y1 - y2) <= 
 sumFeedback :: (Int,Int,Int) -> (Int,Int,Int) -> (Int,Int,Int)
 sumFeedback (a,b,c) (d,e,f) = (a+d, b+e, c+f)
 
--- good solution is to add all possible guesses and then each time reduce this number based on feedback, for example if the feedback is not close 
 initialGuess :: ([Location], GameState)
 initialGuess = ([('A', 1), ('B', 2), ('C', 3)], state)
     where state = combinations 3 allTargets
@@ -53,19 +52,23 @@ combinations _ [] = []
 combinations k (x:xs) = combinations k xs ++ map (x:) (combinations (k-1) xs)
 
 nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
-nextGuess (loc, state) feedback = (newLoc, newState)
+nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
     where 
-        newLoc = head state
-        newState = deleteTarget newLoc state
+        newState = filter (consistent feedback prevGuess) prevState
+        newGuess = head newState
 
+-- finds if the potential target is consistent with the previous feedback
+consistent :: (Int,Int,Int) -> [Location] -> [Location] -> Bool
+consistent prevAns potentialGuess prevGuess =  newAns == prevAns
+    where newAns = feedback prevGuess potentialGuess
 
-equalTarget :: [Location] -> [Location] -> Bool
-equalTarget xs ys = xs `elem` permutations ys
+-- equalTarget :: [Location] -> [Location] -> Bool
+-- equalTarget xs ys = xs `elem` permutations ys
 
-searchTarget :: [Location] -> GameState -> Bool
-searchTarget _ [] = False
-searchTarget xs (y:ys) = equalTarget xs y || searchTarget xs ys
+-- searchTarget :: [Location] -> GameState -> Bool
+-- searchTarget _ [] = False
+-- searchTarget xs (y:ys) = equalTarget xs y || searchTarget xs ys
 
-deleteTarget :: [Location] -> GameState -> GameState
-deleteTarget x = filter $ not . equalTarget x
+-- deleteTarget :: [Location] -> GameState -> GameState
+-- deleteTarget x = filter $ not . equalTarget x
 
