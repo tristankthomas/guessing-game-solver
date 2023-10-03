@@ -7,13 +7,14 @@ module Game (Location, toLocation, fromLocation, feedback,
               GameState, initialGuess, nextGuess) where
 
 import Data.Char (ord)
-import Data.List (permutations)
+import Data.List (permutations, minimumBy)
+import Data.Ord (comparing)
 
 type Location = (Char, Int)
 type GameState = [[Location]]
 toLocation :: String -> Maybe Location
 toLocation loc
-    | [x, y] <- loc, x `elem` ['A'..'H'] , y `elem` ['1'..'4'] = Just (x, read [y]::Int)
+    | [x, y] <- loc, x `elem` ['A'..'D'] , y `elem` ['1'..'3'] = Just (x, read [y]::Int)
     | otherwise = Nothing
 
 fromLocation :: Location -> String
@@ -44,31 +45,60 @@ initialGuess = ([('A', 1), ('B', 2), ('C', 3)], state)
     where state = combinations 3 allTargets
 
 allTargets :: [(Char, Int)]
-allTargets = [(x, y) | x <- ['A'..'H'], y <- [1..4]]
+allTargets = [(x, y) | x <- ['A'..'D'], y <- [1..3]]
 
 combinations :: Int -> [a] -> [[a]]
 combinations 0 _ = [[]]
 combinations _ [] = []
 combinations k (x:xs) = combinations k xs ++ map (x:) (combinations (k-1) xs)
 
-nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
-nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
+nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)--[(Double,[Location])]--([Location], GameState)
+nextGuess (prevGuess, prevState) feedback = (newGuess, newState)--avgLengths
     where 
-        newState = filter (consistent feedback prevGuess) prevState
-        newGuess = head newState
+        newState = pareTargets feedback prevState prevGuess
+        -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
+        avgLengths = map (\x -> (avgTargets (deleteTarget x newState) x, x)) newState
+        (_,newGuess) = minimumBy (comparing fst) avgLengths
+
+-- nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)--[(Double,[Location])]--([Location], GameState)
+-- nextGuess (prevGuess, prevState) feedback = (newGuess, newState)--avgLengths
+--     where 
+--         newState = pareTargets feedback prevState prevGuess
+--         -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
+--         --avgLengths = map (\x -> (avgTargets (deleteTarget x newState) x, x)) newState
+--         newGuess = head newState
 
 -- finds if the potential target is consistent with the previous feedback
 consistent :: (Int,Int,Int) -> [Location] -> [Location] -> Bool
 consistent prevAns potentialGuess prevGuess =  newAns == prevAns
     where newAns = feedback prevGuess potentialGuess
 
--- equalTarget :: [Location] -> [Location] -> Bool
--- equalTarget xs ys = xs `elem` permutations ys
+
+avgTargets :: GameState -> [Location] -> Double
+avgTargets state potTarget = average remainings
+    where 
+        remainings = map calculateRemaining state
+
+        calculateRemaining :: [Location] -> Double
+        -- finds the potential targets remaining for any two potential targets (x and potTarget)
+        calculateRemaining x = fromIntegral $ length $ pareTargets answer state potTarget
+            where answer = feedback potTarget x
+
+
+pareTargets :: (Int,Int,Int) -> GameState -> [Location] -> GameState
+pareTargets feedback state guess  = filter (consistent feedback guess) state
+
+average :: Fractional a => [a] -> a
+average xs = sum xs / fromIntegral (length xs)
+-- the remaining guess (n - 1 of them) and the potential guess (1 of them) are only needed to caluclate the feedback, filtering can be done through feedback, potential guess and state (all other targets)
+
+equalTarget :: [Location] -> [Location] -> Bool
+equalTarget xs ys = xs `elem` permutations ys
 
 -- searchTarget :: [Location] -> GameState -> Bool
 -- searchTarget _ [] = False
 -- searchTarget xs (y:ys) = equalTarget xs y || searchTarget xs ys
 
--- deleteTarget :: [Location] -> GameState -> GameState
--- deleteTarget x = filter $ not . equalTarget x
+deleteTarget :: [Location] -> GameState -> GameState
+deleteTarget x = filter $ not . equalTarget x
 

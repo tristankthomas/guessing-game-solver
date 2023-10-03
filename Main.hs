@@ -9,7 +9,7 @@ import System.Exit
 import Game (Location, toLocation, fromLocation, feedback,
               GameState, initialGuess, nextGuess)
 
-testCase = "C3 F1 F3"
+testCase = "A3 C3 B1"
 
 -- | Main code to test guessing game implementation.
 main :: IO ()
