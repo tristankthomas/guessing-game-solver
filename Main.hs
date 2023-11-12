@@ -11,17 +11,6 @@ import Game (Location, toLocation, fromLocation, feedback,
 
 import Data.Maybe (fromMaybe)
 
--- | Main code to test guessing game implementation.
--- main :: IO ()
--- main = do
---     case mapM toLocation $ words testCase of
---         Just target@[_,_,_] ->
---             gametest target
---         _ -> do
---             putStrLn $ "toLocation Failed to convert one of " ++ testCase
---                  ++ " to a Location"
---             exitFailure
-
 main :: IO ()
 main = do
     args <- getArgs
@@ -35,7 +24,7 @@ main = do
                          ++ " to a Location"
                     exitFailure
         _ -> do
-            putStrLn "Usage: ./your_haskell_program <test_case> <initGuess>"
+            putStrLn "Usage: ./Game <testCase> <initGuess>"
             exitFailure
 
 -- | Guess the given target, counting and showing the guesses.
@@ -56,7 +45,7 @@ loop testCase target guess other guesses = do
     if answer == (3,0,0)
         then do
             putStrLn $ "You got it in " ++ show guesses ++ " guesses!"
-            appendFile "results2.txt" (testCase ++ ": " ++ show guesses ++ "\n")
+            appendFile "results.txt" (testCase ++ "," ++ show guesses ++ "\n")
         else do
             let (guess',other') = nextGuess (guess,other) answer
             loop testCase target guess' other' (guesses+1)

@@ -7,13 +7,13 @@ module Game (Location, toLocation, fromLocation, feedback,
               GameState, initialGuess, nextGuess) where
 
 import Data.Char (ord)
-import Data.List (permutations, minimumBy, sort, group)
+import Data.List (minimumBy, sort, group)
 import Data.Ord (comparing)
-import Debug.Trace
 
 
 type Location = (Char, Int)
 type GameState = [[Location]]
+
 toLocation :: String -> Maybe Location
 toLocation loc
     | [x, y] <- loc, x `elem` ['A'..'H'] , y `elem` ['1'..'4'] = Just (x, read [y]::Int)
@@ -49,33 +49,18 @@ initialGuess guess = (guess, state)
 allTargets :: [(Char, Int)]
 allTargets = [(x, y) | x <- ['A'..'H'], y <- [1..4]]
 
-combinations :: Int -> [a] -> [[a]]
+combinations :: Int -> [Location] -> [[Location]]
 combinations 0 _ = [[]]
 combinations _ [] = []
 combinations k (x:xs) = combinations k xs ++ map (x:) (combinations (k-1) xs)
 
-nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)--[(Double,[Location])]--([Location], GameState)
-nextGuess (prevGuess, prevState) feedback = trace (show avgLengths ++ "TEST\n") (newGuess, newState)--avgLengths
+nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
+nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
     where 
         newState = filter (isConsistent feedback prevGuess) prevState
         -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
         avgLengths = map (\x -> (avgTargets newState x, x)) newState
         (_,newGuess) = minimumBy (comparing fst) avgLengths
-
--- nextGuess2 :: ([Location], GameState) -> (Int,Int,Int) -> [(Double,[Location])]--[(Double,[Location])]--([Location], GameState)
--- nextGuess2 (prevGuess, prevState) feedback = avgLengths--(newGuess, newState)--avgLengths
---     where 
---         newState = filter (isConsistent feedback prevGuess) prevState
---         -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
---         avgLengths = map (\x -> (avgTargets newState x, x)) newState
-        -- (_,newGuess) = minimumBy (comparing fst) avgLengths
--- nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)--[(Double,[Location])]--([Location], GameState)
--- nextGuess (prevGuess, prevState) feedback = (newGuess, newState)--avgLengths
---     where 
---         newState = filter (isConsistent feedback prevGuess) prevState
---         -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
---         --avgLengths = map (\x -> (avgTargets (deleteTarget x newState) x, x)) newState
---         newGuess = head newState
 
 -- finds if the potential target is consistent with the previous feedback
 isConsistent :: (Int,Int,Int) -> [Location] -> [Location] -> Bool
@@ -83,40 +68,13 @@ isConsistent prevAns potentialGuess prevGuess =  newAns == prevAns
     where newAns = feedback prevGuess potentialGuess
 
 avgTargets :: GameState -> [Location] -> Double
-avgTargets state potTarget = fromIntegral (sum [x * x | (_,x) <- counts]) / total
+avgTargets state potTarget = countSum / total
     where 
         feedbacks = map (feedback potTarget) state
-        counts = [(head fb, length fb) | fb <- group (sort feedbacks)]
+        counts = [length fb | fb <- group (sort feedbacks)]
+        countSum = fromIntegral (sum [x * x | x <- counts])
         total = fromIntegral $ length state
 
+-- can be used to create a list of all 4960 possible moves by calling: map createCases (combinations 3 allTargets)
 createCases :: [Location] -> String
 createCases [a,b,c] = fromLocation a ++ " " ++ fromLocation b ++ " " ++ fromLocation c
-
--- avgTargets :: GameState -> [Location] -> Double
--- avgTargets state potTarget = average remainings
---     where 
---         remainings = map calculateRemaining state
-
---         calculateRemaining :: [Location] -> Double
---         -- finds the potential targets remaining for any two potential targets (x and potTarget)
---         calculateRemaining x = fromIntegral $ length $ pareTargets answer state potTarget
---             where answer = feedback potTarget x
-
-
--- pareTargets :: (Int,Int,Int) -> GameState -> [Location] -> GameState
--- pareTargets feedback state guess  = filter (isConsistent feedback guess) state
-
--- average :: Fractional a => [a] -> a
--- average xs = sum xs / fromIntegral (length xs)
--- the remaining guess (n - 1 of them) and the potential guess (1 of them) are only needed to caluclate the feedback, filtering can be done through feedback, potential guess and state (all other targets)
-
--- equalTarget :: [Location] -> [Location] -> Bool
--- equalTarget xs ys = xs `elem` permutations ys
-
--- searchTarget :: [Location] -> GameState -> Bool
--- searchTarget _ [] = False
--- searchTarget xs (y:ys) = equalTarget xs y || searchTarget xs ys
-
--- deleteTarget :: [Location] -> GameState -> GameState
--- deleteTarget x = filter $ not . equalTarget x
-
