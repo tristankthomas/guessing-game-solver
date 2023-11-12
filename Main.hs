@@ -9,8 +9,6 @@ import System.Exit
 import Game (Location, toLocation, fromLocation, feedback,
               GameState, initialGuess, nextGuess)
 
-import Data.Maybe (fromMaybe)
-
 main :: IO ()
 main = do
     args <- getArgs
@@ -27,12 +25,14 @@ main = do
             putStrLn "Usage: ./Game <testCase>"
             exitFailure
 
+
 -- | Guess the given target, counting and showing the guesses.
 gameTest :: [Location] -> IO ()
 gameTest target = do
     putStrLn $ "Searching for target " ++ showLocations target
     let (guess,other) = initialGuess
     loop target guess other 1
+
 
 
 -- | Given a target and guess and a guess number, continue guessing
