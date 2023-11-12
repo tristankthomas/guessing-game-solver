@@ -27,12 +27,6 @@ type GameState = [[Location]]
 -- * loc - 2 character string with first element between 'A' and 'H' and second
 -- element between '1' and '4'.
 --
--- Examples:
--- >>> toLocation "A2"
--- ('A', 2)
---
--- >>> toLocation "C6"
--- Nothing
 toLocation :: String -> Maybe Location
 toLocation loc
     | [x, y] <- loc, x `elem` ['A'..'H'] , y `elem` ['1'..'4'] = Just (x, read [y]::Int)
@@ -44,9 +38,6 @@ toLocation loc
 -- Simply converts the elements of a location tuple to a string so can be more
 -- easily printed. Assumes the location is valid.
 --
--- Example:
--- >>> fromLocation ('C', 2)
--- "C2"
 fromLocation :: Location -> String
 fromLocation (x, y) = x : show y
 
@@ -63,9 +54,6 @@ fromLocation (x, y) = x : show y
 -- * target - group of 3 locations to compare against (treat as correct)
 -- * guess - group of 3 locations to get feedback on (compared against target)
 --
--- Example:
--- >>> feedback [('A',1), ('E',4), ('C',2)] [('H',2), ('A',1), ('A',2)]
--- (1,1,0)
 feedback :: [Location] -> [Location] -> (Int,Int,Int)
 feedback _ [] = (0,0,0)
 -- finds the maximum for each individual guess location since only the shortest
@@ -84,9 +72,6 @@ feedback target (g:gs) =  maximum results `sumFeedback` feedback target gs
 -- * target - single location to compare against (treat as correct)
 -- * guess - single location to get feedback on (compared against target)
 --
--- Example:
--- >>> compareGuess ('A',1) ('C',3)
--- (0,0,1)
 compareGuess :: Location -> Location -> (Int, Int, Int)
 compareGuess target guess
     | target == guess = (1,0,0)
@@ -105,9 +90,6 @@ compareGuess target guess
 -- * (x1,y1) - first location to check adjacency
 -- * (x2,y2) - second location to check adjacency
 --
--- Example:
--- >>> adjacent 2 ('A',1) ('C',3)
--- True
 adjacent :: Int -> Location -> Location -> Bool
 adjacent num (x1,y1) (x2,y2) = abs (ord x1 - ord x2) <= num && abs (y1 - y2) <= num
 
@@ -116,9 +98,6 @@ adjacent num (x1,y1) (x2,y2) = abs (ord x1 - ord x2) <= num && abs (y1 - y2) <= 
 --
 -- Computes the elementwise sum of 2, 3 element feedback tuples
 --
--- Example:
--- >>> sumFeedback (1,0,0) (0,0,1)
--- (1,0,1)
 sumFeedback :: (Int,Int,Int) -> (Int,Int,Int) -> (Int,Int,Int)
 sumFeedback (a,b,c) (d,e,f) = (a+d, b+e, c+f)
 
@@ -127,6 +106,7 @@ sumFeedback (a,b,c) (d,e,f) = (a+d, b+e, c+f)
 -- Returns a tuple of inital location (method of choice explained in module description)
 -- and finds all possible 3 location guesses available on the 4x8 game board, resulting
 -- in 4960 possibilities.
+--
 initialGuess :: ([Location], GameState)
 initialGuess = ([('B',1), ('H',2), ('H',4)], state)
     where state = combinations 3 allTargets
@@ -135,6 +115,7 @@ initialGuess = ([('B',1), ('H',2), ('H',4)], state)
 -- | Returns all individual locations on the board
 --
 -- Finds all 32 board locations which is then used for the combinations function
+--
 allTargets :: [Location]
 allTargets = [(x, y) | x <- ['A'..'H'], y <- [1..4]]
 
@@ -147,6 +128,7 @@ allTargets = [(x, y) | x <- ['A'..'H'], y <- [1..4]]
 -- Arguments:
 -- * k - group size
 -- * (x:xs) - current list of locations (tuples)
+--
 combinations :: Int -> [Location] -> [[Location]]
 combinations 0 _ = [[]]
 combinations _ [] = []
@@ -164,6 +146,7 @@ combinations k (x:xs) = combinations k xs ++ map (x:) (combinations (k-1) xs)
 -- down the possibilities even further
 -- * feedback - previous feedback which is used to pare the possible moves by 
 -- checking for consistency.
+--
 nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
 nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
     where 
@@ -184,6 +167,7 @@ nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
 -- * prevAns - previous feedback (from prevGuess) used for comparison
 -- * potentialGuess - guess to be checked for consistency
 -- * prevGuess - previous guess that the feedback (prevAns) is based on
+--
 isConsistent :: (Int,Int,Int) -> [Location] -> [Location] -> Bool
 isConsistent prevAns potentialGuess prevGuess =  newAns == prevAns
     where newAns = feedback prevGuess potentialGuess
@@ -201,6 +185,7 @@ isConsistent prevAns potentialGuess prevGuess =  newAns == prevAns
 -- Arguments:
 -- * state - all remaining posssible targets
 -- * potTarget - potential target under consideration
+--
 avgTargets :: GameState -> [Location] -> Double
 avgTargets state potTarget = count_sum / total
     where 
@@ -215,5 +200,6 @@ avgTargets state potTarget = count_sum / total
 --
 -- Used to create a list of all 4960 possible moves by calling:
 --      map testToString (combinations 3 allTargets)
+--
 testToString :: [Location] -> String
 testToString [a,b,c] = fromLocation a ++ " " ++ fromLocation b ++ " " ++ fromLocation c
