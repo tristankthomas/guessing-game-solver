@@ -4,7 +4,7 @@
 
 
 module Game (Location, toLocation, fromLocation, feedback,
-              GameState, initialGuess, nextGuess) where
+              GameState, initialGuess, nextGuess, isConsistent) where
 
 import Data.Char (ord)
 import Data.List (minimumBy, sort, group)
