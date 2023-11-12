@@ -4,12 +4,11 @@
 
 
 module Game (Location, toLocation, fromLocation, feedback,
-              GameState, initialGuess, nextGuess, isConsistent) where
+              GameState, initialGuess, nextGuess) where
 
 import Data.Char (ord)
 import Data.List (minimumBy, sort, group)
 import Data.Ord (comparing)
-
 
 type Location = (Char, Int)
 type GameState = [[Location]]
@@ -42,11 +41,11 @@ adjacent num (x1,y1) (x2,y2) = abs (ord x1 - ord x2) <= num && abs (y1 - y2) <= 
 sumFeedback :: (Int,Int,Int) -> (Int,Int,Int) -> (Int,Int,Int)
 sumFeedback (a,b,c) (d,e,f) = (a+d, b+e, c+f)
 
-initialGuess :: [Location] -> ([Location], GameState)
-initialGuess guess = (guess, state)
+initialGuess :: ([Location], GameState)
+initialGuess = ([('B',1), ('H',2), ('H',4)], state)
     where state = combinations 3 allTargets
 
-allTargets :: [(Char, Int)]
+allTargets :: [Location]
 allTargets = [(x, y) | x <- ['A'..'H'], y <- [1..4]]
 
 combinations :: Int -> [Location] -> [[Location]]
@@ -58,7 +57,6 @@ nextGuess :: ([Location], GameState) -> (Int,Int,Int) -> ([Location], GameState)
 nextGuess (prevGuess, prevState) feedback = (newGuess, newState)
     where 
         newState = filter (isConsistent feedback prevGuess) prevState
-        -- for each potential target (pretend this one is correct) find the average number of potential targets remaining if any of the other potential targets (besides this one) are chosen as the next guess, which will result in the most likely correct guess.
         avgLengths = map (\x -> (avgTargets newState x, x)) newState
         (_,newGuess) = minimumBy (comparing fst) avgLengths
 
@@ -70,7 +68,7 @@ isConsistent prevAns potentialGuess prevGuess =  newAns == prevAns
 avgTargets :: GameState -> [Location] -> Double
 avgTargets state potTarget = countSum / total
     where 
-        feedbacks = map (feedback potTarget) state
+        feedbacks = map (`feedback` potTarget) state
         counts = [length fb | fb <- group (sort feedbacks)]
         countSum = fromIntegral (sum [x * x | x <- counts])
         total = fromIntegral $ length state
