@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # iterate through files in the input folder
-file_path = './tests_official/results_B1 H2 H4.txt'
+file_path = './tests/results_B1 H2 H4.txt'
 df = pd.read_csv(file_path, header=None, names=['Line', 'Data'])
 
 # convert value to int

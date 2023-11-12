@@ -11,7 +11,7 @@ testCaseCounter=0
 procCount=1
 # Loop through each test case and run the game to find the best initial guess
 for initGuess in "${testCases[@]}"; do
-    fileName="tests/results_${initGuess}.txt"
+    fileName="tests/results_${initGuess}.csv"
     for testCase in "${testCases[@]}"; do
         command="$executablePath \"$testCase\" \"$initGuess\" \"$fileName\""
         if [ "$procCount" -lt "$numProcs" ]; then

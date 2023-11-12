@@ -20,7 +20,7 @@ for filename in os.listdir(input_folder):
     max_value = df['Data'].max()
     cv = stddev / mean.round(4)
 
-    # extract the part of the filename for the row index (e.g., 'A3 A4 C2')
+    # extract the part of the filename for the test case
     row_index = os.path.splitext(filename)[0].replace('results_', '')
 
     file_statistics[row_index] = {'Mean': mean, 'StdDev': stddev, 'CV': cv, 'Min': min_value, 'Max': max_value}
