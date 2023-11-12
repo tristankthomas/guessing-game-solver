@@ -195,7 +195,6 @@ avgTargets state potTarget = count_sum / total
         total = fromIntegral $ length state
 
 
--- can be used to create a list of all 4960 possible moves by calling: 
 -- | Converts a 3 location test case to a string
 --
 -- Used to create a list of all 4960 possible moves by calling:
