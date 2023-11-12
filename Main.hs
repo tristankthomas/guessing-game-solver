@@ -24,7 +24,7 @@ main = do
                          ++ " to a Location"
                     exitFailure
         _ -> do
-            putStrLn "Usage: ./Game <testCase> <initGuess> <fileName"
+            putStrLn "Usage: ./Game <testCase> <initGuess> <fileName>"
             exitFailure
 
 -- | Guess the given target, counting and showing the guesses.
@@ -32,7 +32,7 @@ gametest :: String -> String -> String -> [Location] -> IO ()
 gametest tc init name target = do
     putStrLn $ "Searching for target " ++ showLocations target
     let (guess,other) = initialGuess $ map (fromMaybe ('A',0) . toLocation) (words init)
-    {- code used to find initial guess that results in lowest amount of available targets
+    {- code used to find initial guess that results in lowest amount of available targets (use with testing_init_guess.sh)
     let answer = feedback target guess
     let newStateLength = length $ filter (isConsistent answer guess) other
     appendFile name (tc ++ ": " ++ show newStateLength ++ "\n")

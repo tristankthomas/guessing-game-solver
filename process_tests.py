@@ -30,5 +30,5 @@ result_df = pd.DataFrame.from_dict(file_statistics, orient='index')
 
 sorted_df = result_df.sort_values(by=['Mean', 'StdDev'])
 
-output_csv = 'results_official.csv'
+output_csv = 'results.csv'
 sorted_df.to_csv(output_csv)
